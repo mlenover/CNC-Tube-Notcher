@@ -1,6 +1,5 @@
-/*
-  DUMMY BLINK CODE
-*/
+#include <main.h>
+
 int i;
 // the setup function runs once when you press reset or power the board
 void setup() {
