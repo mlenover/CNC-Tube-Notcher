@@ -1,0 +1,17 @@
+[
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "C:\\Users\\MLeno\\AppData\\Local\\Arduino15\\packages\\STM32\\hardware\\stm32\\1.6.1\\cores\\arduino"
+  },
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "C:\\Users\\MLeno\\AppData\\Local\\Arduino15\\packages\\STM32\\hardware\\stm32\\1.6.1\\variants\\NUCLEO_F401RE"
+  },
+  {
+    "Sourcefile": "c:\\Users\\MLeno\\Documents\\GitHub\\CNC-Tube-Notcher\\Nucleo-Board-Source\\bin\\sketch\\main.ino.cpp",
+    "Include": "",
+    "Includepath": null
+  }
+]
