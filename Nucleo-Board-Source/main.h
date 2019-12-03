@@ -2,12 +2,14 @@
 #define _INCL_MAIN
 #endif
 
-#define R_STEPS_PER_MM 100
-#define THETA_STEPS_PER_RAD 1000
+#define X_STEPS_PER_MM 100
+#define A_STEPS_PER_RAD 1000
 #define Z_STEPS_PER_MM 100
 
-#define R_MAX_ACCEL 10 //Max acceleration of plunge axis in mm/s^2
-#define THETA_MAX_ACCEL 10 //Max acceleration of rotation axis in rad/s^2
+#define X_MAX_ACCEL 10 //Max acceleration of plunge axis in mm/s^2
+#define A_MAX_ACCEL 10 //Max acceleration of rotation axis in rad/s^2
 #define Z_MAX_ACCEL 10 //Max acceleration of z axis in mm/s^2
 
 #define BAUDRATE 9600
+
+#define NUM_AXIES 3

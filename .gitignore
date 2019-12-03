@@ -1,2 +1,3 @@
 *.json
 **/bin
+Nucleo-Board-Source/bin/sketch/build_opt.h

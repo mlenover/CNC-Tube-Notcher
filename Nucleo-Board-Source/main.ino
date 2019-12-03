@@ -31,7 +31,13 @@ float next_speed[NUM_AXIES];
 float steps_per[NUM_AXIES] = {Z_STEPS_PER_MM, A_STEPS_PER_RAD, X_STEPS_PER_MM};
 float max_step_accel[NUM_AXIES] = {Z_MAX_ACCEL*Z_STEPS_PER_MM, A_MAX_ACCEL*A_STEPS_PER_RAD, X_MAX_ACCEL*X_STEPS_PER_MM};
 
+float stepPosition[NUM_AXIES] = {0, 0, 0};
+
 float getNextCommand(){
+
+}
+
+void stepMotor(int motorNum, bool dir){
 
 }
 
@@ -139,13 +145,90 @@ int stepsToAccelerate(float current_step_speed[NUM_AXIES], float next_step_speed
     return numSteps;
 }
 
-float accelStepLinear(float current_step_speed[NUM_AXIES], float next_step_speed[NUM_AXIES], float max_step_accel[NUM_AXIES], int limitingAxis, int maxNumSteps){
-//Accelerates all axies together based on maximum acceleration of provided limiting axis
-//Will terminate if maxNumSteps is reached
-//Returns speed at completion
+float *accelLinear(float previous_step_speed[NUM_AXIES], float next_step_speed[NUM_AXIES], float max_step_accel[NUM_AXIES], int limitingAxis, int finalNumSteps[NUM_AXIES]){
+    //Accelerates all axies together based on maximum acceleration of provided limiting axis
+    //Will terminate if maxSteps is reached
+    //Updates next_step_speed array to final velocity of each axis if maxSteps is reached
+ 
+    bool metMaxSteps = false;
+    bool reachedNextSpeed = false;
 
+    int numSteps[NUM_AXIES] = {0, 0, 0};
+    int totalSteps = 0;
+    float setPos;
+    float posDifference;
+
+    float accel[NUM_AXIES];
+    float t;
+
+    unsigned long startTime;
+    unsigned long currentTime;
+    unsigned long elapsedTime;
+
+    accel[limitingAxis] = max_step_accel[limitingAxis];
+
+    t = abs((next_step_speed[limitingAxis] - previous_step_speed[limitingAxis])/max_step_accel[limitingAxis]); //Calculate theoretical time to completion if final velocity is reached
+
+    for (int i = 1; i < NUM_AXIES; i++){    //calculate acceleration for remaining 2 axies, assuming time to completion is the same (synchronize axies)
+        if(i != limitingAxis){
+            accel[i] = (next_step_speed[i]-previous_step_speed[i])/t;
+        }
+    }
+
+    startTime = micros();                                   //Start measuring time from beginning of movement
+    while(!metMaxSteps && !reachedNextSpeed){            //Check if EITHER maxSteps is reached or final velocity is reached
+        for (int i = 1; i < NUM_AXIES; i++){                //For each axis,
+
+            currentTime = micros();                         
+            elapsedTime = (currentTime-startTime)/1000000;  //Calculate elapsed time since start
+
+            setPos = previous_step_speed[i]*elapsedTime + (1/2)*accel[i]*sq(elapsedTime);
+            posDifference = setPos - numSteps[i];
+
+            while(abs(posDifference) > 0.5 && numSteps[i] < finalNumSteps[i]){              //If position of motor is more than 1/2 step away from expected position (based on acceleration and elapsed time),
+                if(posDifference > 0){                                                      //check if required position is greater than or less than current position
+                    stepPosition[i] = stepPosition[i] + 1;                                  //increment or decrement step counter, and step motor in the correct direction
+                    stepMotor(i,1);
+                } else {
+                    stepPosition[i] = stepPosition[i] - 1;
+                    stepMotor(i,0);
+                }
+                numSteps[i]++;                                                              //Count every time any motor makes a step
+            }
+            
+        }
+
+        for (int i = 0; i < NUM_AXIES; i++){
+            if(numSteps[i] == finalNumSteps[i]){                                            //Check if total number of steps was exceeded
+                metMaxSteps = true;
+            }
+        }
+
+        if(elapsedTime > t){                                //Check if expected acceleration time was exceeded (to check if final velocity was reached)
+            reachedNextSpeed = true;
+        }
+    }
+
+    if(metMaxSteps){                                     //If max number of steps was reached first, set final velocity vector to final speed of each axis
+        for (int i = 1; i < NUM_AXIES; i++){   
+            next_step_speed[i] = previous_step_speed[i] + accel[i]*elapsedTime;
+        }
+    }
+
+    return next_step_speed;
+}
+
+void moveLinear(long speed[NUM_AXIES], long endStep[NUM_AXIES]){
+    //Moves all axies together until endStep is reached
+
+    unsigned long startTime;
+    unsigned long currentTime;
+    unsigned long elapsedTime;
+
+    
 
 }
+
 
 void setup()
 {
