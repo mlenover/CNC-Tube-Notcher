@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "Nucleo-Board-Source",
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"random": "cpp"
+		}
+	}
+}
