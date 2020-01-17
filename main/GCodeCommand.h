@@ -13,10 +13,16 @@ enum gcode {
     G90, //absolute coordinates
     G91, //relative coordinates
     G92,
-    M02,
-    M18,
-    M100,
-    M114
+    M03,
+    M05,
+    M07,
+    M09,
+    M10,
+    M11,
+    M14,
+    M15,
+    M98,
+    M99
 };
 
 #define GCODE_MAX_PARAMS 26

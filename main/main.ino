@@ -10,6 +10,8 @@
 #include "main.h"
 #endif
 
+#include <RingBuf.h>
+
 bool isSteady[NUM_AXIES] = {true, true, true};
 int remainingSteps[NUM_AXIES] = {0, 0, 0};
 float stepDelay[NUM_AXIES][MAX_MOVE_STEPS];
@@ -22,6 +24,10 @@ int sofar;
 
 bool absMode = true;
 float pos[NUM_AXIES] = {0, 0, 0};
+
+RingBuf<float, bufSize> interSpeed;
+RingBuf<float, bufSize> cmdSpeed;
+RingBuf<GCodeCommand*, bufSize> commandBuf;
 
 GCodeCommand *CodeBuf[2];
 
@@ -103,7 +109,7 @@ void charToString(char S[], String &D)
 }
 
 void setInterrupt(int axis){
-    Tim[axis]->setMode(1, TIMER_OUTPUT_COMPARE);
+  Tim[axis]->setMode(1, TIMER_OUTPUT_COMPARE);
   Tim[axis]->setOverflow(stepDelay[axis][0], MICROSEC_FORMAT);
   switch(axis) {
         case 0:
@@ -119,67 +125,37 @@ void setInterrupt(int axis){
   Tim[axis]->resume();
 }
 
-void processCommand() {
+void commandQueue(){
+  
+}
+
+void addCmdToBuf() {
   charToString(serialBuffer, command);
   GCodeCommand *g = new GCodeCommand();
 
   bool ok = g->parse(command);
   if( ok == true) {
       gcode code = g->getCode();
-      bool hasParam[3];
-      double x = g->getParameter('X', hasParam[0]);
-      double z = g->getParameter('Z', hasParam[1]);
-      double a = g->getParameter('A', hasParam[2]);
-
-      /*
-      Serial.print("Code: ");
-      Serial.println(code);
-      if(hasParam[0]){
-        Serial.print("X Value: ");
-        Serial.println(x);
-      }
-      if(hasParam[1]){
-      Serial.print("Z Value: ");
-      Serial.println(z);
-      }
-      if(hasParam[2]){
-      Serial.print("A Value: ");
-      Serial.println(a);
-      }
-      */
-
+      
       switch (code) {
-        case G00:
-          // statements
+        case G90: //Absolute Coordinates
+          absMode = true;
           break;
-        case G01:
-          // statements
+        case G91: //Relative Coordinates
+          absMode = false;
           break;
-        case G28:
-          break;
-        case G90:
-          break;
-        case G91:
-          break;
-        case M02:
+        case UNKNOWN:
           break;
         default:
-          // statements
-          break;
-     }
-
-      if(code == G00 || code == G01 || code == M02){
-        if(numCommands == 0){
-          CodeBuf[0] = g;
-        } else {
-          CodeBuf[1] = g;
-        }
-        numCommands++;
-      } else if(code == G90) {
-        absMode = true;
-      } else if(code == G91) {
-        absMode = false;
+          commandBuf.push(g); //Add command to buffer
       }
+  }
+}
+
+void processCmd(){
+  int numCmds = commandBuf.size();
+  if(numCmds > interSpeed.size()){
+    
   }
 }
 
@@ -192,6 +168,7 @@ void setup(){
     Serial.begin(115200);
     pinSetup();
     digitalWrite(ENABLE_PIN, LOW);
+    interSpeed.push(0.0);
     ready();
 }
 
@@ -203,8 +180,9 @@ void loop(){
     if(c=='\n') {
       serialBuffer[sofar]=0;
       Serial.print(F("\r\n"));
-      processCommand();
-      if(numCommands < 2){
+      addCmdToBuf();
+      processCmd();
+      if(numCommands < bufSize){
         ready();
       }
     }
@@ -216,8 +194,10 @@ void loop(){
     } else {
       if(isFinishedMove()){
         isMoving = false;
-        CodeBuf[0] = CodeBuf[1];
-        numCommands--;
+        for(int i = 0; i < (bufSize - 1); i++){
+          CodeBuf[i] = CodeBuf[i+1];
+          numCommands--;
+        }
         ready();
       }
     }

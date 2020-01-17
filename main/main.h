@@ -19,6 +19,8 @@
 #define Z_LIM 11        //CHANGE PIN
 #define A_LIM 12        //CHANGE PIN
 
+#define bufSize 4
+
 class Pin
 {
   public:

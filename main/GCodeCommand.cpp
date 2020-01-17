@@ -84,17 +84,35 @@ bool GCodeCommand::parse(String commandText)
             break;
         case 'M':
             switch(codeNumber) {
-                case 2:
-                    code = M02;
+                case 3:
+                    code = M03;
                     break;
-                case 18:
-                    code = M18;
+                case 5:
+                    code = M05;
                     break;
-                case 100:
-                    code = M100;
+                case 7:
+                    code = M07;
                     break;
-                case 114:
-                    code = M114;
+                case 9:
+                    code = M09;
+                    break;
+                case 10:
+                    code = M10;
+                    break;
+                case 11:
+                    code = M11;
+                    break;
+                case 14:
+                    code = M14;
+                    break;
+                case 15:
+                    code = M15;
+                    break;
+                case 98:
+                    code = M98;
+                    break;
+                case 99:
+                    code = M99;
                     break;
                 default:
                     return false;
