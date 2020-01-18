@@ -20,7 +20,7 @@ const String axies = "XZA";
 
 #define X_MAX_SPEED 10 //Max speed of x axis axis in mm/s
 #define Z_MAX_SPEED 10 //Max speed of plunge axis in mm/s
-#define A_Max_SPEED 10 //Max speed of rotation axis in rad/s
+#define A_MAX_SPEED 10 //Max speed of rotation axis in rad/s
 
 #define X_MAX_ACCEL 10 //Max acceleration of x axis in mm/s^2
 #define Z_MAX_ACCEL 10 //Max acceleration of plunge axis in mm/s^2

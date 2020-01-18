@@ -49,7 +49,7 @@ void moveMotor(int axis, float distance, float axisSpeed, bool (&isSteady) [NUM_
 };
 
 void getSpeed(float fr, float zValStart, float delta[NUM_AXIES], float (&v)[NUM_AXIES])     //Takes feedrate & array of z, a, x, delta values
-                                                                                    //Returns array of speeds for z, a, x
+                                                                                            //Returns array of speeds for z, a, x
 {   
   float r1;
   float r2;

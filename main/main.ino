@@ -26,7 +26,8 @@ bool absMode = true;
 float pos[NUM_AXIES] = {0, 0, 0};
 
 float zeros[NUM_AXIES] = {0, 0, 0};
-    
+float maxSpeeds[NUM_AXIES] = {X_MAX_SPEED, Z_MAX_SPEED, A_MAX_SPEED};
+
 RingBuf<float*, bufSize> interSpeed;
 RingBuf<float*, bufSize> cmdSpeed;
 RingBuf<GCodeCommand*, bufSize> commandBuf;
@@ -163,10 +164,10 @@ void processCmd(){
     for(int i = cmdSpeed.size(); i < numCmds; i++){
       code = commandBuf[i]->getCode();
       if(code == G00){
+        cmdSpeed.push(maxSpeeds);
+      } else if(code == G01){
         getCmdSpeed(commandBuf[i], speeds, pos, absMode);
         cmdSpeed.push(speeds);
-      } else if(code == G01){
-        eccf
       } else {
         cmdSpeed.push(zeros);
       }
