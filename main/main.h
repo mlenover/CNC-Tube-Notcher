@@ -36,4 +36,4 @@ extern void stepMotor(int);
 extern void setDir(bool, int);
 extern int remainingSteps[NUM_AXIES];
 extern float stepDelay[NUM_AXIES][MAX_MOVE_STEPS];
-extern void setInterrupt(int axis);
+extern void setInterrupt(int);

@@ -39,3 +39,5 @@ extern void homeAxes();
 extern void getSpeed(float, float, float [NUM_AXIES], float (&) [NUM_AXIES]);
 extern bool executeCommand(GCodeCommand* [2], float (&) [NUM_AXIES], bool, bool (&)[NUM_AXIES]);
 extern bool isFinishedMove();
+extern float calcDecel(float [NUM_AXIES], float [NUM_AXIES], float (&) [], int);
+extern void *getCmdSpeed(GCodeCommand*, float (&)[NUM_AXIES], float (&)[NUM_AXIES], bool);

@@ -25,8 +25,10 @@ int sofar;
 bool absMode = true;
 float pos[NUM_AXIES] = {0, 0, 0};
 
-RingBuf<float, bufSize> interSpeed;
-RingBuf<float, bufSize> cmdSpeed;
+float zeros[NUM_AXIES] = {0, 0, 0};
+    
+RingBuf<float*, bufSize> interSpeed;
+RingBuf<float*, bufSize> cmdSpeed;
 RingBuf<GCodeCommand*, bufSize> commandBuf;
 
 GCodeCommand *CodeBuf[2];
@@ -154,7 +156,29 @@ void addCmdToBuf() {
 
 void processCmd(){
   int numCmds = commandBuf.size();
+  float speeds[NUM_AXIES];
+  bool hasSpeed;
+  gcode code;
+  if(numCmds > cmdSpeed.size()){
+    for(int i = cmdSpeed.size(); i < numCmds; i++){
+      code = commandBuf[i]->getCode();
+      if(code == G00){
+        getCmdSpeed(commandBuf[i], speeds, pos, absMode);
+        cmdSpeed.push(speeds);
+      } else if(code == G01){
+        eccf
+      } else {
+        cmdSpeed.push(zeros);
+      }
+    }
+  }
   if(numCmds > interSpeed.size()){
+      if(code == G00){
+      } else if(code == G01){
+        
+      } else {
+        cmdSpeed.push(zeros);
+      }
     
   }
 }
@@ -167,8 +191,9 @@ void ready() {
 void setup(){
     Serial.begin(115200);
     pinSetup();
-    digitalWrite(ENABLE_PIN, LOW);
-    interSpeed.push(0.0);
+    digitalWrite(ENABLE_PIN, LOW);  
+    interSpeed.push(zeros);
+    
     ready();
 }
 
@@ -190,7 +215,7 @@ void loop(){
 
   if(numCommands > 0){
     if(!isMoving){
-      executeCommand(CodeBuf, pos, absMode, isSteady);
+      //executeCommand(CodeBuf, pos, absMode, isSteady);
     } else {
       if(isFinishedMove()){
         isMoving = false;
