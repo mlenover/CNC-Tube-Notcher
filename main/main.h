@@ -35,5 +35,5 @@ extern void readLimSwitches(bool (&) [NUM_AXIES]);
 extern void stepMotor(int);
 extern void setDir(bool, int);
 extern int remainingSteps[NUM_AXIES];
-extern float stepDelay[NUM_AXIES][MAX_MOVE_STEPS];
+//extern float stepDelay[NUM_AXIES][MAX_ACCEL_STEPS];
 extern void setInterrupt(int);

@@ -14,7 +14,7 @@
 
 bool isSteady[NUM_AXIES] = {true, true, true};
 int remainingSteps[NUM_AXIES] = {0, 0, 0};
-float stepDelay[NUM_AXIES][MAX_MOVE_STEPS];
+float stepDelay[NUM_AXIES][MAX_ACCEL_STEPS];
 int numCommands = 0;
 bool isMoving = false;
 
@@ -28,9 +28,9 @@ float pos[NUM_AXIES] = {0, 0, 0};
 float zeros[NUM_AXIES] = {0, 0, 0};
 float maxSpeeds[NUM_AXIES] = {X_MAX_SPEED, Z_MAX_SPEED, A_MAX_SPEED};
 
-RingBuf<float*, bufSize> interSpeed;
-RingBuf<float*, bufSize> cmdSpeed;
+RingBuf<Move*, bufSize> moveBuf;
 RingBuf<GCodeCommand*, bufSize> commandBuf;
+RingBuf<float, bufSize> dummyBuffer;
 
 GCodeCommand *CodeBuf[2];
 
@@ -157,30 +157,37 @@ void addCmdToBuf() {
 
 void processCmd(){
   int numCmds = commandBuf.size();
+  int numMoves = moveBuf.size();
   float speeds[NUM_AXIES];
+  float* nextSpeeds;
   bool hasSpeed;
   gcode code;
-  if(numCmds > cmdSpeed.size()){
-    for(int i = cmdSpeed.size(); i < numCmds; i++){
-      code = commandBuf[i]->getCode();
+  if(numCmds >= numMoves){   //moveBuf[0] is always PREVIOUS movement, so need 2 commands in buffer before new command is parsed
+    for(int i = numMoves; i <= numCmds; i++){
+      Move *m = new Move();
+      getNumSteps(commandBuf[i-1], absMode, pos, m->numSteps); //Calculate the number of steps for each axis, and save into new move object
+      
+      code = commandBuf[i-1]->getCode();
       if(code == G00){
-        cmdSpeed.push(maxSpeeds);
+        m->steadySpeed = maxSpeeds;
       } else if(code == G01){
-        getCmdSpeed(commandBuf[i], speeds, pos, absMode);
-        cmdSpeed.push(speeds);
+        getCmdSpeed(commandBuf[i-1], speeds, pos, m->numSteps);
+        m->steadySpeed = speeds;
       } else {
-        cmdSpeed.push(zeros);
+        m->steadySpeed = zeros;
       }
+
+      //calc start accel
+      
+      moveBuf.push(m);
+      
+      if(moveBuf.size() > 2){
+        getAccelToSpeed(moveBuf[i-1]->steadySpeed, moveBuf[i]->steadySpeed, moveBuf[i-1]->endSpeed); //Based on previous steady speed and current steady speed, set transition speed between previous & current moves
+      }
+      //calc end accel
+      
+      //calc num start, steady, end steps
     }
-  }
-  if(numCmds > interSpeed.size()){
-      if(code == G00){
-      } else if(code == G01){
-        
-      } else {
-        cmdSpeed.push(zeros);
-      }
-    
   }
 }
 
@@ -193,7 +200,10 @@ void setup(){
     Serial.begin(115200);
     pinSetup();
     digitalWrite(ENABLE_PIN, LOW);  
-    interSpeed.push(zeros);
+
+    Move *m = new Move();
+    m->endSpeed = zeros;
+    moveBuf.push(m);
     
     ready();
 }

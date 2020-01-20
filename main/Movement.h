@@ -29,7 +29,7 @@ const String axies = "XZA";
 #define MAX_FEEDRATE         1000000
 #define MIN_FEEDRATE         1
 
-#define MAX_MOVE_STEPS 3000
+#define MAX_ACCEL_STEPS 3000
 
 #define X_BOUNDS 350
 #define Z_BOUNDS 400
@@ -40,4 +40,18 @@ extern void getSpeed(float, float, float [NUM_AXIES], float (&) [NUM_AXIES]);
 extern bool executeCommand(GCodeCommand* [2], float (&) [NUM_AXIES], bool, bool (&)[NUM_AXIES]);
 extern bool isFinishedMove();
 extern float calcDecel(float [NUM_AXIES], float [NUM_AXIES], float (&) [], int);
-extern void *getCmdSpeed(GCodeCommand*, float (&)[NUM_AXIES], float (&)[NUM_AXIES], bool);
+extern void getCmdSpeed(GCodeCommand*, float (&)[NUM_AXIES], float (&)[NUM_AXIES], int*);
+extern void getAccelToSpeed(float [NUM_AXIES], float [NUM_AXIES], float*);
+extern void getNumSteps(GCodeCommand* g, bool absMode, float (&)[NUM_AXIES], int*);
+
+class Move {
+    public:
+        float* endSpeed;                      //Transition speed between commands
+        float* steadySpeed;                     //Commanded speed for each axis
+        float (*startAccel)[MAX_ACCEL_STEPS];   //Array of delays for lead-in acceleration
+        float (*endAccel)[MAX_ACCEL_STEPS];     //Array of delays for lead-out acceleration
+        int* numSteps;                          //Total number of steps for movement
+        int* numStartSteps;                     //Number of steps in lead-in acceleration
+        int* numSteadySteps;                    //Number of steps steady-state movement
+        int* numEndSteps;                       //Number of steps in lead-out acceleration
+};

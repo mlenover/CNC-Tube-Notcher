@@ -11,7 +11,7 @@
 #endif
 
 float stepsPer[NUM_AXIES] = {X_STEPS_PER_MM, Z_STEPS_PER_MM, A_STEPS_PER_RAD};
-float max_step_accel[NUM_AXIES] = {X_MAX_ACCEL, A_MAX_ACCEL, Z_MAX_ACCEL};
+float maxAccel[NUM_AXIES] = {X_MAX_ACCEL, A_MAX_ACCEL, Z_MAX_ACCEL};
 bool hasParam[NUM_AXIES];
 
 void homeAxes(){
@@ -44,7 +44,7 @@ void moveMotor(int axis, float distance, float axisSpeed, bool (&isSteady) [NUM_
   remainingSteps[axis] = numSteps;
   isSteady[axis] = true;
   
-  stepDelay[axis][0] = 1000000/(stepsPer[axis]*axisSpeed);
+  //stepDelay[axis][0] = 1000000/(stepsPer[axis]*axisSpeed);
   setInterrupt(axis);
 };
 
@@ -127,14 +127,7 @@ bool executeCommand(GCodeCommand* (CodeBuf)[2], float (&pos)[NUM_AXIES], bool ab
   return isMoving;
 }
 */
-
-void *getCmdSpeed(GCodeCommand* g, float (&axisSpeed)[NUM_AXIES], float (&pos)[NUM_AXIES], bool absMode){
-  bool hasFeedrate;
-  float feedrate = g->getParameter('F',hasFeedrate);
-  if(!hasFeedrate){
-    feedrate = MIN_FEEDRATE;
-  }
-
+void getNumSteps(GCodeCommand* g, bool absMode, float (&pos)[NUM_AXIES], int* numSteps){
   float val;
   float del[NUM_AXIES];
   
@@ -151,13 +144,31 @@ void *getCmdSpeed(GCodeCommand* g, float (&axisSpeed)[NUM_AXIES], float (&pos)[N
     } else {
       del[i] = 0;
     }
-  }
 
-  getSpeed(feedrate, pos[1], del, axisSpeed);
-  return axisSpeed;
+    numSteps[i] = round(stepsPer[i]*del[i]);
+  }
 }
 
-float *getAccelToSpeed(float (currentSpeed)[NUM_AXIES], float (nextSpeed)[NUM_AXIES], float (&accelToSpeed)[NUM_AXIES]){
+
+void getCmdSpeed(GCodeCommand* g, float (&axisSpeed)[NUM_AXIES], float (&pos)[NUM_AXIES], int* numSteps){
+  bool hasFeedrate;
+  float feedrate = g->getParameter('F',hasFeedrate);
+  if(!hasFeedrate){
+    feedrate = MIN_FEEDRATE;
+  }
+
+  float val;
+  float del[NUM_AXIES];
+
+  for(int i = 0; i < NUM_AXIES; i++){
+    del[i] = numSteps[i] / stepsPer[i];
+  }
+  
+  getSpeed(feedrate, pos[1], del, axisSpeed);
+  return;
+}
+
+void getAccelToSpeed(float (currentSpeed)[NUM_AXIES], float (nextSpeed)[NUM_AXIES], float* accelToSpeed){
   
     float inverseTimeDelay[NUM_AXIES];
     
@@ -187,7 +198,7 @@ float *getAccelToSpeed(float (currentSpeed)[NUM_AXIES], float (nextSpeed)[NUM_AX
         totalAcceleration[i] = (next_step_speed[i] - current_step_speed[i])*inverseTimeDelay[i];
         //Calculate total acceleration is speed change in single steps_per (delta v/ delta t)
 
-        if(totalAcceleration[i] > max_step_accel[i]){
+        if(totalAcceleration[i] > maxAccel[i]){
             exceedsMaxAccel = true;
         }
         //If moving from current speed to next speed in one time exceeds acceleration limits for any axis,
@@ -197,7 +208,7 @@ float *getAccelToSpeed(float (currentSpeed)[NUM_AXIES], float (nextSpeed)[NUM_AX
     if (exceedsMaxAccel){
         for (int i = 0; i < NUM_AXIES; i++){
             if(totalAcceleration[i] != 0){
-                minDecelForAxis = sqrt(abs(max_step_accel[NUM_AXIES]/totalAcceleration[i]));
+                minDecelForAxis = sqrt(abs(maxAccel[NUM_AXIES]/totalAcceleration[i]));
                 if(minDecelForAxis<decel){
                     decel = minDecelForAxis;
                 }
@@ -210,7 +221,42 @@ float *getAccelToSpeed(float (currentSpeed)[NUM_AXIES], float (nextSpeed)[NUM_AX
       accelToSpeed[i] = decel * currentSpeed[i];
     }
     
-    return accelToSpeed;
+    return;
+}
+
+
+void genAccelDelays(float* startSpeed, float* endSpeed, float (*accelDelays)[MAX_ACCEL_STEPS], int* numStep){
+  float speed1;
+  float speed2;
+  int isAccel;    //Is the axis accelerating (or decelerating)
+  
+  for(int i = 0; i < NUM_AXIES; i++){
+    if(endSpeed >= startSpeed){
+      isAccel = 1;
+    } else {
+      isAccel = -1;
+    }
+    
+    numStep[i] = 0;
+    speed1 = startSpeed[i];
+    accelDelays[i][numStep[i]] = 1/speed1;
+    
+    while(speed1 != endSpeed[i]){
+      numStep[i]++;
+      
+      speed2 = speed1*abs(speed1);
+      speed2 += 2*maxAccel[i]*isAccel*(1/stepsPer[i]);
+      speed2 = sqrt(abs(speed2)) * ((speed2 > 0) ? 1 : ((speed2 < 0) ? -1 : 0));  //Take sqaure root, but maintain sign
+
+      if(speed2*isAccel > endSpeed[i]*isAccel){
+        speed2 = endSpeed[i];
+      }
+
+      accelDelays[i][numStep[i]] = 1/speed2;
+      
+      speed1 = speed2;
+    }
+  }
 }
 
 bool isFinishedMove(){ 
