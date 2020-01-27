@@ -283,6 +283,110 @@ bool getStepsToAccel(float speedScale, float nominalSpeed[NUM_AXIES], float &dur
     return true;
 }
 
+bool getAccelDelays(float speedScale, float nominalSpeed[NUM_AXIES], int numSteps[NUM_AXIES], float duration, bool isAccel, float (*delay)[MAX_ACCEL_STEPS]){
+    
+    if(speedScale < 0 || speedScale >= 1){
+        return false;
+    }
+    
+    for(int i = 0; i < NUM_AXIES; i++){
+        if(numSteps[i] > MAX_ACCEL_STEPS){
+            return false;
+        }
+    }
+    
+    float vS[NUM_AXIES];        //Velocity at t=T/2 in s-curve
+    float aO[NUM_AXIES];        //Overall acceleration. Accel required to transition between speeds LINEARLY in given duration
+    float aS[NUM_AXIES];        //Max acceleration in s-curve. Occurs at t=T/2
+    float jerk[NUM_AXIES];      //Rate of change of acceleration
+    float reducedStepSpeed[NUM_AXIES];
+    float nominalStepSpeed[NUM_AXIES];
+    float c1[NUM_AXIES];        //Constant for solving inverse cubic to solve for first delay
+    float c2;                   //Another constant for solving inverse cubic
+    float nominalSpeedRatio;    //Ratio of nominal speed to nominal speed of 0th axis
+    float stepSpeed;
+    int startStep[NUM_AXIES];
+    
+    for(int i = 0; i < NUM_AXIES; i++){
+        if(isAccel){
+            startStep[i] = 0;
+        } else {
+            startStep[i] = numSteps[i] - 1;
+        }
+    }
+    
+    for(int i=0; i < NUM_AXIES; i++){
+        nominalStepSpeed[i] = stepsPer[i]*nominalSpeed[i];
+        reducedStepSpeed[i] = speedScale*nominalStepSpeed[i];
+    }
+    
+    aO[0] = 2*(nominalStepSpeed[0]-reducedStepSpeed[0])/duration;
+    jerk[0] = 2*aO[0]/duration;
+    c1[0] = -1/(jerk[0]/3);
+    c2 = reducedStepSpeed[0]/(jerk[0]/2);
+    delay[0][startStep[0]] = cbrt(-1*c1[0]+sqrt(pow(c1[0],2)+pow(c2,3)))+cbrt(-1*c1[0]-sqrt(pow(c1[0],2)+pow(c2,3))); //Solving inverse cube to determine first delay
+    vS[0] = reducedStepSpeed[0]+(jerk[0]*pow(duration,2))/8;
+    aS[0] = jerk[0]*duration/2;
+    
+    if(NUM_AXIES>0){  //Rather than solving using the equations above, we can scale them based on the ratio of maximum velocities
+        for(int i=1; i< NUM_AXIES; i++){
+            nominalSpeedRatio = nominalStepSpeed[i]/nominalStepSpeed[0];
+            aO[i] = aO[0]*nominalSpeedRatio;
+            jerk[i] = jerk[0]*nominalSpeedRatio;
+            c1[i] = c1[0]/nominalSpeedRatio;
+            delay[i][startStep[i]] = pow((-c1[i]+sqrt(pow(c1[i],2)+pow(c2,3))),1/3)+pow((-c1[i]-sqrt(pow(c1[i],2)+pow(c2,3))),1/3); //There might be a function to determine this based on delay[0][startStep[0]] & nominalSpeedRatio, but idk
+            vS[i] = vS[0]*nominalSpeedRatio;
+            aS[i] = aS[0]*nominalSpeedRatio;
+        }
+    }
+    
+    int stepNum;
+    float elapsedTime;
+    
+    for(int i=0; i < NUM_AXIES; i++){
+        
+        elapsedTime = delay[i][startStep[i]];
+        if(isAccel){
+            stepNum = startStep[i] + 1;
+        } else {
+            stepNum = startStep[i] - 1;
+        }
+        
+        while(elapsedTime < (duration/2)){    //Increasing accel portion of s-curve
+            stepSpeed = reducedStepSpeed[i]+jerk[i]*pow((elapsedTime),2)/2;
+            delay[i][stepNum] = 1/stepSpeed;
+            elapsedTime += delay[i][stepNum];
+            if(isAccel){
+                stepNum++;
+            } else {
+                stepNum--;
+            }
+        }
+        
+        while(elapsedTime < (duration)){    //Decreasing accel portion of s-curve
+            stepSpeed = -1*(jerk[i]*pow((elapsedTime-duration/2),2))/2 + aS[i]*(elapsedTime-duration/2)+vS[i];
+            delay[i][stepNum] = 1/stepSpeed;
+            elapsedTime += delay[i][stepNum];
+            if(isAccel){
+                stepNum++;
+            } else {
+                stepNum--;
+            }
+        }
+        
+        while(((stepNum < numSteps[i]) && isAccel) || ((stepNum >= 0) && !isAccel)){    //Since numSteps is estimated based on duration, may overestimate by 1 or 2 steps. Continue at nominalSpeed until numSteps is reached
+            delay[i][stepNum] = 1/nominalStepSpeed[i];
+            if(isAccel){
+                stepNum++;
+            } else {
+                stepNum--;
+            }
+        }
+    }
+    
+    return true;
+}
+
 bool isFinishedMove(){ 
     for(int i = 0; i < NUM_AXIES; i++){
       if(remainingSteps[i] > 0 && hasParam[i]){
