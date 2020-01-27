@@ -43,6 +43,7 @@ extern float calcDecel(float [NUM_AXIES], float [NUM_AXIES], float (&) [], int);
 extern void getCmdSpeed(GCodeCommand*, float (&)[NUM_AXIES], float (&)[NUM_AXIES], int*);
 extern void getAccelToSpeed(float [NUM_AXIES], float [NUM_AXIES], float*);
 extern void getNumSteps(GCodeCommand* g, bool absMode, float (&)[NUM_AXIES], int*);
+extern bool getStepsToAccel(float, float*, float, int*);
 
 class Move {
     public:

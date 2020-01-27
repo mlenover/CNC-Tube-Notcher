@@ -259,6 +259,30 @@ void genAccelDelays(float* startSpeed, float* endSpeed, float (*accelDelays)[MAX
   }
 }
 
+bool getStepsToAccel(float speedScale, float nominalSpeed[NUM_AXIES], float &duration, int (&numSteps)[NUM_AXIES]){
+    if(speedScale < 0 || speedScale >= 1){
+        return false;
+    }
+    
+    duration = 0;
+    float currentDuration;
+    float reducedSpeed[NUM_AXIES];
+    
+    for(int i=0; i< NUM_AXIES; i++){
+        reducedSpeed[i] = speedScale*nominalSpeed[i];
+        currentDuration = (nominalSpeed[i]-reducedSpeed[i])/maxAccel[i];
+        if(currentDuration > duration){
+            duration = currentDuration;  
+        }
+    }
+    
+    for(int i=0; i< NUM_AXIES; i++){
+        numSteps[i] = ceil((nominalSpeed[i]+reducedSpeed[i])*duration/2)+1;
+    }
+    
+    return true;
+}
+
 bool isFinishedMove(){ 
     for(int i = 0; i < NUM_AXIES; i++){
       if(remainingSteps[i] > 0 && hasParam[i]){
