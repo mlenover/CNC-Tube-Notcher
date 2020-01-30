@@ -29,27 +29,35 @@ const String axies = "XZA";
 #define MAX_FEEDRATE         1000000
 #define MIN_FEEDRATE         1
 
-#define MAX_ACCEL_STEPS 3000
+#define MAX_ACCEL_STEPS 2000
 
 #define X_BOUNDS 350
 #define Z_BOUNDS 400
 #define A_BOUNDS 7
 
+#define MAX_TURN_DELTA 0.1
+#define MAX_CENTRIPAL_ACCEL 2
+
 extern void homeAxes();
 extern void getSpeed(float, float, float [NUM_AXIES], float (&) [NUM_AXIES]);
 extern bool executeCommand(GCodeCommand* [2], float (&) [NUM_AXIES], bool, bool (&)[NUM_AXIES]);
 extern bool isFinishedMove();
-extern float calcDecel(float [NUM_AXIES], float [NUM_AXIES], float (&) [], int);
+//extern float calcDecel(float [NUM_AXIES], float [NUM_AXIES], float (&) []NUM_AXIES, int);
 extern void getCmdSpeed(GCodeCommand*, float (&)[NUM_AXIES], float (&)[NUM_AXIES], int*);
 extern void getAccelToSpeed(float [NUM_AXIES], float [NUM_AXIES], float*);
 extern void getNumSteps(GCodeCommand* g, bool absMode, float (&)[NUM_AXIES], int*);
 extern bool getStepsToAccel(float, float*, float, int*);
-extern bool getAccelDelays(float, float*, int*, float, bool, float* (*));
+extern bool getAccelDelays(float, float*, int*, bool*, float, bool, float* (*));
+extern void getMaxJunctScale(float, float, float*, float*, float*);
+extern void getMaxAccelToSpeed(float, float*, float*, int*);
 
 class Move {
     public:
-        float* endSpeed;                      //Transition speed between commands
+        float entryScale;                       //% of steady speed to begin movement at
         float* steadySpeed;                     //Commanded speed for each axis
+        float exitScale;                        //% of steady speed to end movement at
+        float maxEntryScale;                    //Max value of entryScale based on centripital acceleration thru movement change
+        float maxExitScale;                     //Max value of exitScale based on centripital acceleration thru movement change
         float (*startAccel)[MAX_ACCEL_STEPS];   //Array of delays for lead-in acceleration
         float (*endAccel)[MAX_ACCEL_STEPS];     //Array of delays for lead-out acceleration
         int* numSteps;                          //Total number of steps for movement

@@ -157,11 +157,33 @@ void addCmdToBuf() {
 
 void processCmd(){
   int numCmds = commandBuf.size();
+  float speedScale;
+  
+  /*
   int numMoves = moveBuf.size();
   float speeds[NUM_AXIES];
   float* nextSpeeds;
   bool hasSpeed;
   gcode code;
+  */
+  if(numCmds > 1){
+    Move *m = new Move();
+    m->exitSpeed = 0;
+
+    //TO DO: ADD POSITION OBJECT TO MOVE CLASS
+    //UPDATE ONCE WHEN NEW CMD IS ADDED -> STARTING POSITION
+    
+    getMaxJunctScale(moveBuf[i-1]->maxExitScale, moveBuf[i]->maxEntryScale, moveBuf[i-1]->maxExitScale, moveBuf[i]->maxExitScale, float pos[NUM_AXIES]);
+    m->maxEntryScale;
+    
+    for(int i = numCmds - 1; i >= 0; i--){
+      if(i == (numCmds - 1)){
+      }
+      getMaxAccelToSpeed(float, float*, float*, int*);
+      moveBuf[i]->entrySpeed
+    }
+  }
+  /*
   if(numCmds >= numMoves){   //moveBuf[0] is always PREVIOUS movement, so need 2 commands in buffer before new command is parsed
     for(int i = numMoves; i <= numCmds; i++){
       Move *m = new Move();
@@ -189,6 +211,7 @@ void processCmd(){
       //calc num start, steady, end steps
     }
   }
+  */
 }
 
 void ready() {

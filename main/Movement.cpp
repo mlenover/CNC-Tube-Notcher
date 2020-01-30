@@ -264,13 +264,23 @@ bool getStepsToAccel(float speedScale, float nominalSpeed[NUM_AXIES], float &dur
         return false;
     }
     
+    float absNominalSpeed[NUM_AXIES];
+
+    for(int i=0; i < NUM_AXIES; i++){
+      if(nominalSpeed[NUM_AXIES] < 0){
+        absNominalSpeed[i] = -1*nominalSpeed[i];
+      } else {
+        absNominalSpeed[i] = nominalSpeed[i];
+      }
+    }
+    
     duration = 0;
     float currentDuration;
     float reducedSpeed[NUM_AXIES];
     
     for(int i=0; i< NUM_AXIES; i++){
         reducedSpeed[i] = speedScale*nominalSpeed[i];
-        currentDuration = (nominalSpeed[i]-reducedSpeed[i])/maxAccel[i];
+        currentDuration = (absNominalSpeed[i]-reducedSpeed[i])/maxAccel[i];
         if(currentDuration > duration){
             duration = currentDuration;  
         }
@@ -283,7 +293,7 @@ bool getStepsToAccel(float speedScale, float nominalSpeed[NUM_AXIES], float &dur
     return true;
 }
 
-bool getAccelDelays(float speedScale, float nominalSpeed[NUM_AXIES], int numSteps[NUM_AXIES], float duration, bool isAccel, float (*delay)[MAX_ACCEL_STEPS]){
+bool getAccelDelays(float speedScale, float nominalSpeed[NUM_AXIES], int numSteps[NUM_AXIES], bool (&dir)[NUM_AXIES], float duration, bool isAccel, float (*delay)[MAX_ACCEL_STEPS]){
     
     if(speedScale < 0 || speedScale >= 1){
         return false;
@@ -308,6 +318,13 @@ bool getAccelDelays(float speedScale, float nominalSpeed[NUM_AXIES], int numStep
     int startStep[NUM_AXIES];
     
     for(int i = 0; i < NUM_AXIES; i++){
+        if(nominalSpeed[i] < 0){
+          nominalSpeed[i] = -1*nominalSpeed[i];
+          dir[i] = false;
+        } else {
+          dir[i] = true;
+        }
+        
         if(isAccel){
             startStep[i] = 0;
         } else {
@@ -385,6 +402,53 @@ bool getAccelDelays(float speedScale, float nominalSpeed[NUM_AXIES], int numStep
     }
     
     return true;
+}
+
+void getMaxJunctScale(float &exitSpeedScale, float &entrySpeedScale, float previousSpeed[NUM_AXIES], float nextSpeed[NUM_AXIES], float pos[NUM_AXIES]){
+    float previousStepSpeed[NUM_AXIES];
+    float nextStepSpeed[NUM_AXIES];
+    float previousCartSpeed[NUM_AXIES]; //Cartesian step speed
+    //We will define x-y plane to be face of pipe
+    //z axis will along pipe axis -> as a result 'z' value in this vector is 'x' speed in stepSpeed array
+    float nextCartSpeed[NUM_AXIES];
+    float v_dot;
+    float v0_abs;
+    float v1_abs;
+    float v_junct;
+    
+    for(int i = 0; i < NUM_AXIES; i++){
+        previousStepSpeed[i] = previousSpeed[i]*stepsPer[i];
+        nextStepSpeed[i] = nextSpeed[i]*stepsPer[i];
+    }
+    
+    previousCartSpeed[0] = previousStepSpeed[1]*cos(pos[2])-pos[1]*previousStepSpeed[2]*sin(pos[2]);    //x_dot = r_dot*cos(theta)-r*theta_dot*sin(theta)
+    previousCartSpeed[1] = previousStepSpeed[1]*sin(pos[2])+pos[1]*previousStepSpeed[2]*cos(pos[2]);    //y_dot = r_dot*sin(theta)+r*theta_dot*cos(theta)
+    previousCartSpeed[2] = previousStepSpeed[0];                                                        //z_dot = axial speed of pipe
+    
+    nextCartSpeed[0] = nextStepSpeed[1]*cos(pos[2])-pos[1]*nextStepSpeed[2]*sin(pos[2]);    //x_dot = r_dot*cos(theta)-r*theta_dot*sin(theta)
+    nextCartSpeed[1] = nextStepSpeed[1]*sin(pos[2])+pos[1]*nextStepSpeed[2]*cos(pos[2]);    //y_dot = r_dot*sin(theta)+r*theta_dot*cos(theta)
+    nextCartSpeed[2] = nextStepSpeed[0];                                                    //z_dot = axial speed of pipe
+
+    v_dot = (previousCartSpeed[0]*nextCartSpeed[0] + previousCartSpeed[1]*nextCartSpeed[1] + previousCartSpeed[2]*nextCartSpeed[2]);
+    v0_abs = pow(previousCartSpeed[0],2) + pow(previousCartSpeed[1],2) + pow(previousCartSpeed[2],2);
+    v1_abs = pow(nextCartSpeed[0],2) + pow(nextCartSpeed[1],2) + pow(nextCartSpeed[2],2);
+    
+    v_junct = v_dot/(v0_abs*v1_abs);         //Equals cos(theta)
+    v_junct= sqrt((1 - v_junct)/2);      //Equals sin(theta/2)
+    v_junct = MAX_TURN_DELTA*v_junct/(1-v_junct);  //Equals 'R' of virtual accleration curve
+    v_junct = sqrt(MAX_CENTRIPAL_ACCEL*v_junct);      //Equals max junction speed
+    
+    exitSpeedScale = v_junct/v0_abs;
+    entrySpeedScale = v_junct/v1_abs;
+}
+
+void getMaxAccelToSpeed(float entrySpeedScale, float (&exitSpeedScale)[NUM_AXIES], float nominalSpeed[NUM_AXIES], int numSteps[NUM_AXIES]){
+  float maxExitSpeed;
+
+  for(int i=0; i<NUM_AXIES; i++){
+    maxExitSpeed = sqrt(nominalSpeed[i]*entrySpeedScale[i] + 2*maxAccel[i]*numSteps[i]);
+    exitSpeedScale[i] = maxExitSpeed/nominalSpeed[i];
+  }
 }
 
 bool isFinishedMove(){ 
