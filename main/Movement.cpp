@@ -127,30 +127,27 @@ bool executeCommand(GCodeCommand* (CodeBuf)[2], float (&pos)[NUM_AXIES], bool ab
   return isMoving;
 }
 */
-void getNumSteps(GCodeCommand* g, bool absMode, float (&pos)[NUM_AXIES], int* numSteps){
+void getNumSteps(GCodeCommand* g, bool absMode, int (&pos)[NUM_AXIES], int* numSteps){
   float val;
-  float del[NUM_AXIES];
   
   for(int i = 0; i < NUM_AXIES; i++){
     val = g->getParameter(axies.charAt(i),hasParam[i]);
     if(hasParam[i]){
       if(absMode){
-        del[i] = val - pos[i];
-        pos[i] = val;
+        numSteps[i] = round(val*stepsPer[i]) - pos[i];
+        pos[i] = numSteps[i];
       } else {
-        del[i] = val;
-        pos[i] = pos[i] + val;
+        numSteps[i] = round(val*stepsPer[i]);
+        pos[i] = numSteps[i] + val;
       }
     } else {
-      del[i] = 0;
+      numSteps[i] = 0;
     }
-
-    numSteps[i] = round(stepsPer[i]*del[i]);
   }
 }
 
 
-void getCmdSpeed(GCodeCommand* g, float (&axisSpeed)[NUM_AXIES], float (&pos)[NUM_AXIES], int* numSteps){
+void getCmdSpeed(GCodeCommand* g, float (&axisSpeed)[NUM_AXIES], int (&pos)[NUM_AXIES], int* numSteps){
   bool hasFeedrate;
   float feedrate = g->getParameter('F',hasFeedrate);
   if(!hasFeedrate){
@@ -404,7 +401,7 @@ bool getAccelDelays(float speedScale, float nominalSpeed[NUM_AXIES], int numStep
     return true;
 }
 
-void getMaxJunctScale(float &exitSpeedScale, float &entrySpeedScale, float previousSpeed[NUM_AXIES], float nextSpeed[NUM_AXIES], float pos[NUM_AXIES]){
+void getMaxJunctScale(float &exitSpeedScale, float &entrySpeedScale, float previousSpeed[NUM_AXIES], float nextSpeed[NUM_AXIES], int pos[NUM_AXIES]){
     float previousStepSpeed[NUM_AXIES];
     float nextStepSpeed[NUM_AXIES];
     float previousCartSpeed[NUM_AXIES]; //Cartesian step speed
@@ -442,11 +439,11 @@ void getMaxJunctScale(float &exitSpeedScale, float &entrySpeedScale, float previ
     entrySpeedScale = v_junct/v1_abs;
 }
 
-void getMaxAccelToSpeed(float entrySpeedScale, float (&exitSpeedScale)[NUM_AXIES], float nominalSpeed[NUM_AXIES], int numSteps[NUM_AXIES]){
+void getMaxAccelToSpeed(float entrySpeedScale, float &exitSpeedScale, float nominalSpeed[NUM_AXIES], int numSteps[NUM_AXIES]){
   float maxExitSpeed;
 
   for(int i=0; i<NUM_AXIES; i++){
-    maxExitSpeed = sqrt(nominalSpeed[i]*entrySpeedScale[i] + 2*maxAccel[i]*numSteps[i]);
+    maxExitSpeed = sqrt(nominalSpeed[i]*entrySpeedScale + 2*maxAccel[i]*numSteps[i]);
     exitSpeedScale[i] = maxExitSpeed/nominalSpeed[i];
   }
 }

@@ -23,7 +23,7 @@ String command;
 int sofar;
 
 bool absMode = true;
-float pos[NUM_AXIES] = {0, 0, 0};
+int pos[NUM_AXIES] = {0, 0, 0};
 
 float zeros[NUM_AXIES] = {0, 0, 0};
 float maxSpeeds[NUM_AXIES] = {X_MAX_SPEED, Z_MAX_SPEED, A_MAX_SPEED};
@@ -157,7 +157,9 @@ void addCmdToBuf() {
 
 void processCmd(){
   int numCmds = commandBuf.size();
-  float speedScale;
+  int numMoves = moveBuf.size();
+  float entrySpeedScale;
+  float exitSpeedScale;
   
   /*
   int numMoves = moveBuf.size();
@@ -166,21 +168,33 @@ void processCmd(){
   bool hasSpeed;
   gcode code;
   */
-  if(numCmds > 1){
-    Move *m = new Move();
-    m->exitSpeed = 0;
 
-    //TO DO: ADD POSITION OBJECT TO MOVE CLASS
-    //UPDATE ONCE WHEN NEW CMD IS ADDED -> STARTING POSITION
+  int numSteps[NUM_AXIES];
+  
+  if(numCmds > 1){
+    //Parse new command for first time
+    Move *m = new Move();
+    //m->maxExitScale = 0;
+    m->startStep = pos;
+    getNumSteps(commandBuf[numCmds-1], absMode, pos, m->numSteps);  //updates numSteps object, position array
+    getCmdSpeed(commandBuf[numCmds-1], m->steadySpeed, pos, m->numSteps); //updates steadySpeed object
+    getMaxJunctScale(moveBuf[numMoves-1]->maxExitScale, m->maxEntryScale, moveBuf[numMoves-1]->steadySpeed, m->steadySpeed, m->startStep);  //sets max previous exit scale, max current entry scale based on sharpness of turn
+    moveBuf.push(m);
+
+    numMoves++;
     
-    getMaxJunctScale(moveBuf[i-1]->maxExitScale, moveBuf[i]->maxEntryScale, moveBuf[i-1]->maxExitScale, moveBuf[i]->maxExitScale, float pos[NUM_AXIES]);
-    m->maxEntryScale;
-    
-    for(int i = numCmds - 1; i >= 0; i--){
-      if(i == (numCmds - 1)){
+    for(int i = numMoves - 1; i >= 0; i--){
+      moveBuf[i]->entryScale = moveBuf[i]->maxEntryScale;
+      moveBuf[i]->exitScale = moveBuf[i]->maxExitScale;
+      
+      getMaxAccelToSpeed(moveBuf[i]->exitScale, entrySpeedScale, moveBuf[i]->steadySpeed, moveBuf[i]->numSteps);
+      
+      if(entrySpeedScale < moveBuf[i]->entryScale){
+        moveBuf[i]->entryScale = entrySpeedScale;
       }
-      getMaxAccelToSpeed(float, float*, float*, int*);
-      moveBuf[i]->entrySpeed
+      
+      if(moveBuf[i]->entryScale*moveBuf[i]->steadySpeed > moveBuf[i-1]->steadySpeed
+      //getMaxAccelToSpeed(float, float*, float*, int*);
     }
   }
   /*
@@ -225,7 +239,7 @@ void setup(){
     digitalWrite(ENABLE_PIN, LOW);  
 
     Move *m = new Move();
-    m->endSpeed = zeros;
+    //m->endSpeed = zeros;
     moveBuf.push(m);
     
     ready();
