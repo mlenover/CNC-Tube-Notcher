@@ -46,18 +46,16 @@ extern bool isFinishedMove();
 extern void getCmdSpeed(GCodeCommand*, float (&)[NUM_AXIES], int (&)[NUM_AXIES], int*);
 extern void getAccelToSpeed(float [NUM_AXIES], float [NUM_AXIES], float*);
 extern void getNumSteps(GCodeCommand* g, bool absMode, int (&)[NUM_AXIES], int*);
-extern bool getStepsToAccel(float, float*, float, int*);
-extern bool getAccelDelays(float, float*, int*, bool*, float, bool, float* (*));
-extern void getMaxJunctScale(float, float, float*, float*, int*);
-extern void getMaxAccelToSpeed(float, float(&), float*, int*);
+extern bool getStepsToAccel(float*, float*, float, int*);
+extern bool getAccelDelays(float*, float*, int*, bool*, float, bool, float* (*));
+extern void getMaxJunctScale(float*, float*, float*, int*);
+extern void getMaxAccelToSpeed(float*, float*, int*);
 
 class Move {
     public:
-        float entryScale = 0;                   //% of steady speed to begin movement at
+        float entrySpeed[NUM_AXIES] = 0;        //% of steady speed to begin movement at
         float steadySpeed[NUM_AXIES];           //Commanded speed for each axis
-        float exitScale = 0;                    //% of steady speed to end movement at
-        float maxEntryScale = 0;                //Max value of entryScale based on centripital acceleration thru movement change
-        float maxExitScale = 0;                 //Max value of exitScale based on centripital acceleration thru movement change
+        float maxEntrySpeed = 0;                //Max value of entryScale based on centripital acceleration thru movement change
         float (*startAccel)[MAX_ACCEL_STEPS];   //Array of delays for lead-in acceleration
         float (*endAccel)[MAX_ACCEL_STEPS];     //Array of delays for lead-out acceleration
         int* numSteps;                          //Total number of steps for movement
@@ -65,4 +63,6 @@ class Move {
         int* numSteadySteps;                    //Number of steps steady-state movement
         int* numEndSteps;                       //Number of steps in lead-out acceleration
         int* startStep;                         //Step position at beginning of movement
+        int* dir;                               //Direction of each axis movement
+        bool isOptimal = false;                 //Should this movement be checked again when another move is added?
 };
