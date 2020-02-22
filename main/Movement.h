@@ -38,7 +38,7 @@ const String axies = "XZA";
 #define MAX_TURN_DELTA 0.1
 #define MAX_CENTRIPAL_ACCEL 2
 
-extern void homeAxes();
+extern void homeAxes(); 
 extern void getSpeed(float, float, float [NUM_AXIES], float (&) [NUM_AXIES]);
 extern bool executeCommand(GCodeCommand* [2], float (&) [NUM_AXIES], bool, bool (&)[NUM_AXIES]);
 extern bool isFinishedMove();
@@ -53,7 +53,7 @@ extern void getMaxAccelToSpeed(float*, float*, int*);
 
 class Move {
     public:
-        float entrySpeed[NUM_AXIES] = 0;        //% of steady speed to begin movement at
+        float entrySpeed[NUM_AXIES] = 0;        //steady speed to begin movement at
         float steadySpeed[NUM_AXIES];           //Commanded speed for each axis
         float maxEntrySpeed = 0;                //Max value of entryScale based on centripital acceleration thru movement change
         float (*startAccel)[MAX_ACCEL_STEPS];   //Array of delays for lead-in acceleration

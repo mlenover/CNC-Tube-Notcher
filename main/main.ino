@@ -227,7 +227,7 @@ void processCmd(){
     for(int i = numMoves - 1; i > 1; i--){
       isOptimalNow[i] = false;
       if(i == (numMoves - 1)){
-        getMaxAccelToSpeed(0, moveBuf[i]->entrySpeed, moveBuf[i]->numSteps);
+        getMaxAccelToSpeed({0,0,0}, moveBuf[i]->entrySpeed, moveBuf[i]->numSteps);
       } else {
         getMaxAccelToSpeed(moveBuf[i+1]->entrySpeed, moveBuf[i]->entrySpeed, moveBuf[i]->numSteps);
       }
