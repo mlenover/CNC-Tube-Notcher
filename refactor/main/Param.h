@@ -52,7 +52,9 @@ class Param {
     const int defaultAPos = 0;
     
     static const int numMoveBuf = 10;
+
+    static const int precision = 1000000; //Microseconds
 };
 
-Param param;
+static Param param;
 #endif

@@ -1,0 +1,42 @@
+[
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "C:\\Users\\MLeno\\AppData\\Local\\Arduino15\\packages\\STM32\\hardware\\stm32\\1.7.0\\cores\\arduino"
+  },
+  {
+    "Sourcefile": null,
+    "Include": "",
+    "Includepath": "C:\\Users\\MLeno\\AppData\\Local\\Arduino15\\packages\\STM32\\hardware\\stm32\\1.7.0\\variants\\NUCLEO_F401RE"
+  },
+  {
+    "Sourcefile": "c:\\Users\\MLeno\\Documents\\GitHub\\CNC-Tube-Notcher\\refctor2\\main\\bin\\sketch\\main.ino.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "c:\\Users\\MLeno\\Documents\\GitHub\\CNC-Tube-Notcher\\refctor2\\main\\bin\\sketch\\GCodeCommand.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "c:\\Users\\MLeno\\Documents\\GitHub\\CNC-Tube-Notcher\\refctor2\\main\\bin\\sketch\\MoveList.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "c:\\Users\\MLeno\\Documents\\GitHub\\CNC-Tube-Notcher\\refctor2\\main\\bin\\sketch\\MoveRunner.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "c:\\Users\\MLeno\\Documents\\GitHub\\CNC-Tube-Notcher\\refctor2\\main\\bin\\sketch\\MovementPlanner.cpp",
+    "Include": "",
+    "Includepath": null
+  },
+  {
+    "Sourcefile": "c:\\Users\\MLeno\\Documents\\GitHub\\CNC-Tube-Notcher\\refctor2\\main\\bin\\sketch\\Timers.cpp",
+    "Include": "",
+    "Includepath": null
+  }
+]

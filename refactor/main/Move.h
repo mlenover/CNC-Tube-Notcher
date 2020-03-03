@@ -13,8 +13,13 @@ class Move {
         float entrySpeed[param.numAxes] = {0,0,0};      //Steady speed to begin movement at
         float steadySpeed[param.numAxes];               //Commanded speed for each axis
         float maxEntrySpeed[param.numAxes] = {0,0,0};   //Max value of entryScale based on centripital acceleration thru movement change
-        float (*startAccel)[param.maxAccelSteps];       //Array of delays for lead-in acceleration
-        float (*endAccel)[param.maxAccelSteps];         //Array of delays for lead-out acceleration
+        float accel[param.numAxes] = {0,0,0};           //Acceleration of each axis
+        float jerk = 0;                                 //Rate of change of acceleration
+        float startAccelDur = 0;                        //Time to spend accelerating during lead-in
+        float endAccelDur = 0;                          //Time to spend accelerating during lead-out
+        float nextDelay[param.numAxes] = {0,0,0};                            //Time to wait before next step;
+        //float (*startAccel)[param.maxAccelSteps];     //Array of delays for lead-in acceleration
+        //float (*endAccel)[param.maxAccelSteps];       //Array of delays for lead-out acceleration
         int numSteps[param.numAxes];                    //Total number of steps for movement
         int numStartSteps[param.numAxes];               //Number of steps in lead-in acceleration
         int numSteadySteps[param.numAxes];              //Number of steps steady-state movement

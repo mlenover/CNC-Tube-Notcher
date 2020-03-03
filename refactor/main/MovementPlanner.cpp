@@ -265,8 +265,10 @@ void MovementPlanner::findJunctSpeeds(Move &move){
             }
 
             if(isGreater){
-                curMove->entrySpeed = curMove->maxEntrySpeed;
-                
+                for(int i = 0; i < param.numAxes; i++){
+                    curMove->entrySpeed[i] = curMove->maxEntrySpeed[i];
+                }
+
                 curMove->isNewlyOptimal = true;
                 
                 while(curMove->prevMove->status == MOVE_STATUS_EDITABLE){
@@ -277,7 +279,9 @@ void MovementPlanner::findJunctSpeeds(Move &move){
         } while(curMove->prevMove->status == MOVE_STATUS_EDITABLE);
 
         while(curMove->nextMove != MOVE_STATUS_UNUSED) {
-            oldEndSpeeds = curMove->nextMove->entrySpeed;
+            for(int i = 0; i < param.numAxes; i++){
+                oldEndSpeeds[i] = curMove->nextMove->entrySpeed[i];
+            }
 
             for(int i=0; i<param.numAxes; i++){
                 curMove->nextMove->entrySpeed[i] = sqrt(sq(curMove->entrySpeed[i]) + 2*param.maxAccel[i]*curMove->numSteps[i]);
@@ -291,7 +295,9 @@ void MovementPlanner::findJunctSpeeds(Move &move){
             }
 
             if(isGreater){
-                curMove->nextMove->entrySpeed = oldEndSpeeds;
+                for(int i = 0; i < param.numAxes; i++){
+                    curMove->nextMove->entrySpeed[i] = oldEndSpeeds[i];
+                }
             } else if(curMove->isNewlyOptimal){ //Else->exit speed had to be reduced, not optimal
                 curMove->isNewlyOptimal = false;
             }
@@ -304,7 +310,7 @@ void MovementPlanner::genMoveProfiles(Move &move){
     Move* curMove = &move;
     float currentDuration;
     float duration = 0;
-    float lAxis = 0;    //limiting axis
+    int lAxis = 0;    //limiting axis
     float topSpeed[param.numAxes];
     float leadInDur = 0;
     float leadOutDur = 0;
@@ -370,7 +376,7 @@ void MovementPlanner::genMoveProfiles(Move &move){
                     topSpeed[j] = curMove->steadySpeed[j]*maxSpeedScale;
 
                 //Calculate the number of lead-in steps
-                curMove->numStartSteps = 0.5*(maxSpeedScale*curMove->steadySpeed[j] + curMove->entrySpeed[j])*leadInDur;
+                curMove->numStartSteps[j] = 0.5*(maxSpeedScale*curMove->steadySpeed[j] + curMove->entrySpeed[j])*leadInDur;
 
                 //Calculate the number of lead-out steps,
                 if(curMove->nextMove != nullptr){
@@ -390,21 +396,58 @@ void MovementPlanner::genMoveProfiles(Move &move){
 
                 //Any remaining steps occur at a steady maximum speed
                 curMove->numSteadySteps[j] = curMove->numSteps[j] - curMove->numStartSteps[j] - curMove->numEndSteps[j];
+            }
+            //Generate the lead-in delays
+            genAccelDelays(curMove->entrySpeed, topSpeed, curMove->startAccel, curMove->numStartSteps);
 
-                //Generate the lead-in delays
-                genAccelDelays(curMove->entrySpeed, topSpeed[j], curMove->startAccel, curMove->numStartSteps);
-
-                //Generate the lead-out delays
-                if(curMove->nextMove != nullptr){
-                    genAccelDelays(curMove->nextMove->entrySpeed, topSpeed[j], curMove->endAccel, curMove->numEndSteps);
-                } else {
-                    int zeros[param.numAxes] = {0,0,0};
-                    genAccelDelays(zeros, topSpeed[j], curMove->endAccel, curMove->numEndSteps);
-                }
+            //Generate the lead-out delays
+            if(curMove->nextMove->status != MOVE_STATUS_UNUSED){
+                genAccelDelays(curMove->nextMove->entrySpeed, topSpeed, curMove->endAccel, curMove->numEndSteps);
+            } else {
+                float zeros[param.numAxes] = {0,0,0};
+                genAccelDelays(zeros, topSpeed, curMove->endAccel, curMove->numEndSteps);
             }
             
         }
         curMove->isOptimal = curMove->isNewlyOptimal;
+    }
+}
+
+void MovementPlanner::setAccelDurations(Move* move){
+    for(int i = 0; i < param.numAxes; i++){
+        move->startAccelDur =param.precision * abs(move->steadySpeed[i]-move->entrySpeed[i]) / move->accel[i];
+
+        if(move->nextMove->status != MOVE_STATUS_UNUSED){
+            move->endAccelDur = param.precision * abs(move->steadySpeed[i]-move->nextMove->entrySpeed[i]) / move->accel[i];
+        } else {
+            move->endAccelDur = param.precision * abs(move->steadySpeed[i]) / move->accel[i];
+        }
+    }
+}
+
+void MovementPlanner::getFirstDelay(Move* move){
+    float duration;
+    float jerk;
+    float nextSpeed;
+
+    for(int i = 0; i < param.numAxes; i++){
+        if(move->numSteadySteps[i] > 0 && move->numStartSteps[i] == 0){
+            move->nextDelay[i] = 1/move->steadySpeed[i];
+            continue;
+        }
+
+        if(move->numStartSteps[i] > 0){
+            float c1 = -1/(jerk/3);
+            float c2 = 0/(jerk/2);
+            nextDelay[i] = param.precision*cbrt(-1*c1+sqrt(pow(c1,2)+pow(c2,3)))+cbrt(-1*c1-sqrt(pow(c1,2)+pow(c2,3)));
+        } else {
+
+        }
+        
+        jerk = 2*cmdAccel/(duration/precision);
+        float c1 = -1/(jerk/3);
+        float c2 = 0/(jerk/2);
+        nextMoveDelay = precision*cbrt(-1*c1+sqrt(pow(c1,2)+pow(c2,3)))+cbrt(-1*c1-sqrt(pow(c1,2)+pow(c2,3))); //Solving inverse cube to determine first delay
     }
 }
 
