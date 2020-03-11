@@ -30,10 +30,10 @@
 
 #ifdef DEFAULTS_GENERIC
   // Grbl generic default settings. Should work across different machines.
-  #define DEFAULT_X_STEPS_PER_MM 			400.0
-  #define DEFAULT_Y_STEPS_PER_MM 			400.0
-  #define DEFAULT_Z_STEPS_PER_MM 			400.0
-  #define DEFAULT_A_STEPS_PER_DEG           10.0
+  #define DEFAULT_X_STEPS_PER_MM 			1666.667
+  #define DEFAULT_Y_STEPS_PER_MM 			500.0
+  #define DEFAULT_Z_STEPS_PER_MM 			3333.333
+  #define DEFAULT_A_STEPS_PER_DEG           166.667
   #define DEFAULT_B_STEPS_PER_DEG           10.0
   #define DEFAULT_X_MAX_RATE 				1000.0  // mm/min
   #define DEFAULT_Y_MAX_RATE 				1000.0  // mm/min
@@ -53,22 +53,22 @@
   #define DEFAULT_SPINDLE_RPM_MAX 			3000.0  // rpm
   #define DEFAULT_SPINDLE_RPM_MIN 			0.0     // rpm
 
-  #define DEFAULT_X_BACKLASH                0.01     // mm
-  #define DEFAULT_Y_BACKLASH                0.01     // mm
-  #define DEFAULT_Z_BACKLASH                0.01     // mm
+  #define DEFAULT_X_BACKLASH                0.00     // mm
+  #define DEFAULT_Y_BACKLASH                0.00     // mm
+  #define DEFAULT_Z_BACKLASH                0.00     // mm
 
   #define DEFAULT_SYSTEM_INVERT_MASK		0
-  #define DEFAULT_STEPPING_INVERT_MASK 		0
-  #define DEFAULT_DIRECTION_INVERT_MASK 	0
+  #define DEFAULT_STEPPING_INVERT_MASK 		7
+  #define DEFAULT_DIRECTION_INVERT_MASK 	6
   #define DEFAULT_STEPPER_IDLE_LOCK_TIME	50      // msec (0-254, 255 keeps steppers enabled)
   #define DEFAULT_STATUS_REPORT_MASK 		1       // MPos enabled
   #define DEFAULT_JUNCTION_DEVIATION 		0.01    // mm
   #define DEFAULT_ARC_TOLERANCE 			0.001   // mm
   #define DEFAULT_REPORT_INCHES 			0       // false
-  #define DEFAULT_INVERT_ST_ENABLE 			0       // false
+  #define DEFAULT_INVERT_ST_ENABLE 			1       // false
   #define DEFAULT_INVERT_LIMIT_PINS 		0       // false
   #define DEFAULT_SOFT_LIMIT_ENABLE 		0       // false
-  #define DEFAULT_HARD_LIMIT_ENABLE 		1       // false
+  #define DEFAULT_HARD_LIMIT_ENABLE 		0       // false
   #define DEFAULT_INVERT_PROBE_PIN 			0       // false
   #define DEFAULT_LASER_MODE 				0       // false
   #define DEFAULT_HOMING_ENABLE 			1       // false

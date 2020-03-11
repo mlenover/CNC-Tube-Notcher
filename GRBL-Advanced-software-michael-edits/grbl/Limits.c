@@ -73,6 +73,7 @@ uint8_t Limits_GetState(void)
 	limit_state = (GPIO_ReadInputDataBit(GPIO_LIM_X_PORT, GPIO_LIM_X_PIN)<<X_LIMIT_BIT);
 	limit_state |= (GPIO_ReadInputDataBit(GPIO_LIM_Y_PORT, GPIO_LIM_Y_PIN)<<Y_LIMIT_BIT);
 	limit_state |= (GPIO_ReadInputDataBit(GPIO_LIM_Z_PORT, GPIO_LIM_Z_PIN)<<Z_LIMIT_BIT);
+	limit_state |= (GPIO_ReadInputDataBit(GPIO_LIM_A_PORT, GPIO_LIM_A_PIN)<<A_LIMIT_BIT);
 
 	if(BIT_IS_FALSE(settings.flags, BITFLAG_INVERT_LIMIT_PINS)) {
 		limit_state ^= LIMIT_MASK;

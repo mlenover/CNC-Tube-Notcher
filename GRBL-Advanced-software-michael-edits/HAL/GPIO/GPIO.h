@@ -54,9 +54,11 @@
 #define GPIO_LIM_X_PORT			GPIOC
 #define GPIO_LIM_Y_PORT			GPIOB
 #define GPIO_LIM_Z_PORT			GPIOA
+#define GPIO_LIM_A_PORT			GPIOC
 #define GPIO_LIM_X_PIN			GPIO_Pin_7
 #define GPIO_LIM_Y_PIN			GPIO_Pin_6
 #define GPIO_LIM_Z_PIN			GPIO_Pin_6
+#define GPIO_LIM_A_PIN          GPIO_Pin_15
 
 // Spindle
 #define GPIO_SPINDLE_PWM_PORT	GPIOA
@@ -96,6 +98,11 @@
 #define GPIO_PROBE_PORT			GPIOC
 #define GPIO_PROBE_PIN			GPIO_Pin_0
 
+//Laser
+#define GPIO_LASER_ENA_PORT     GPIOC
+#define GPIO_LASER_ENA_PIN      GPIO_Pin_13
+#define GPIO_LASER_SENSE_PORT   GPIOC
+#define GPIO_LASER_SENSE_PIN    GPIO_Pin_14
 
 #define GPIO_STEPPER	0
 #define GPIO_PROBE		1
@@ -104,7 +111,7 @@
 #define GPIO_COOLANT	4
 #define GPIO_SYSTEM		5
 #define GPIO_PNEUMATICS 6
-
+#define GPIO_LASER      7
 
 #ifdef __cplusplus
 extern "C" {

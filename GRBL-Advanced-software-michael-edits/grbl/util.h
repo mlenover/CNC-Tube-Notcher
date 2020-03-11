@@ -69,7 +69,8 @@
 #define X_LIMIT_BIT					0
 #define Y_LIMIT_BIT					1
 #define Z_LIMIT_BIT					2
-#define LIMIT_MASK					((1<<X_LIMIT_BIT) | (1<<Y_LIMIT_BIT) | (1<<Z_LIMIT_BIT))
+#define A_LIMIT_BIT                 3
+#define LIMIT_MASK					((1<<X_LIMIT_BIT) | (1<<Y_LIMIT_BIT) | (1<<Z_LIMIT_BIT) | (1<<A_LIMIT_BIT))
 
 #define SPINDLE_ENABLE_BIT			0
 #define SPINDLE_DIRECTION_BIT		1
