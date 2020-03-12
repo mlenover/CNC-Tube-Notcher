@@ -40,15 +40,15 @@
 
 
 // Serial baud rate
-//#define BAUD_RATE	115200
-#define BAUD_RATE	230400
+#define BAUD_RATE	115200
+//#define BAUD_RATE	230400
 
 
 // Uncomment to use external I2C EEPROM
 //#define USE_EXT_EEPROM
 
 // Uncomment to use 4th/5th axis
-//#define USE_MULTI_AXIS
+#define USE_MULTI_AXIS
 
 
 // Define realtime command special characters. These characters are 'picked-off' directly from the

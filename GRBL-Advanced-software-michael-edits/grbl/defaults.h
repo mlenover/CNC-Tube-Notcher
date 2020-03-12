@@ -31,7 +31,7 @@
 #ifdef DEFAULTS_GENERIC
   // Grbl generic default settings. Should work across different machines.
   #define DEFAULT_X_STEPS_PER_MM 			1666.667
-  #define DEFAULT_Y_STEPS_PER_MM 			500.0
+  #define DEFAULT_Y_STEPS_PER_MM 			125.984
   #define DEFAULT_Z_STEPS_PER_MM 			3333.333
   #define DEFAULT_A_STEPS_PER_DEG           166.667
   #define DEFAULT_B_STEPS_PER_DEG           10.0
@@ -59,7 +59,7 @@
 
   #define DEFAULT_SYSTEM_INVERT_MASK		0
   #define DEFAULT_STEPPING_INVERT_MASK 		7
-  #define DEFAULT_DIRECTION_INVERT_MASK 	6
+  #define DEFAULT_DIRECTION_INVERT_MASK 	14
   #define DEFAULT_STEPPER_IDLE_LOCK_TIME	50      // msec (0-254, 255 keeps steppers enabled)
   #define DEFAULT_STATUS_REPORT_MASK 		1       // MPos enabled
   #define DEFAULT_JUNCTION_DEVIATION 		0.01    // mm
@@ -72,7 +72,7 @@
   #define DEFAULT_INVERT_PROBE_PIN 			0       // false
   #define DEFAULT_LASER_MODE 				0       // false
   #define DEFAULT_HOMING_ENABLE 			1       // false
-  #define DEFAULT_HOMING_DIR_MASK 			0       // move positive dir
+  #define DEFAULT_HOMING_DIR_MASK 			11      // move positive dir
   #define DEFAULT_HOMING_FEED_RATE 			50.0    // mm/min
   #define DEFAULT_HOMING_SEEK_RATE 			500.0   // mm/min
   #define DEFAULT_HOMING_DEBOUNCE_DELAY 	250     // msec (0-65k)
